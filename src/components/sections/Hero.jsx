@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef } from 'react'
 import { gsap, useGSAP } from '../../lib/gsap'
-import { useFinePointer, useIsDesktop } from '../../lib/hooks'
+import { useFinePointer, useMediaQuery } from '../../lib/hooks'
 import { hero, person } from '../../data/content'
 import Token from '../ui/Token'
 
@@ -11,42 +11,71 @@ const PEAK = { wght: 180, wdth: 96 }
    out and widens as the cursor passes over it (Archivo's wght/wdth axes). */
 function HeroName({ interactive }) {
   const ref = useRef(null)
-  const isDesktop = useIsDesktop()
-  const lines = isDesktop ? [person.name.toUpperCase()] : [person.first.toUpperCase(), person.last.toUpperCase()]
+  // two stacked lines only on phones; everything wider gets one line
+  const wide = useMediaQuery('(min-width: 640px)')
+  const lines = wide ? [person.name.toUpperCase()] : [person.first.toUpperCase(), person.last.toUpperCase()]
 
   useLayoutEffect(() => {
     const el = ref.current
     if (!el) return
+    const box = el.closest('.hero-inner')
+    const masks = [...el.querySelectorAll('.hn-mask')]
     const letters = [...el.querySelectorAll('.hn-l')]
+    // layout px, ignoring the scroll-driven scale on .hero-inner
+    const scale = () => (box && box.offsetWidth ? box.getBoundingClientRect().width / box.offsetWidth : 1) || 1
     const fit = () => {
       const lineEls = [...el.querySelectorAll('.hn-line')]
-      letters.forEach((l) => {
-        l.style.width = ''
-        l.style.fontVariationSettings = ''
-      })
+      const s = scale()
+      letters.forEach((l) => (l.style.fontVariationSettings = ''))
+      masks.forEach((m) => (m.style.width = ''))
       // measure the real laid-out line (kerning, spacer and all) at 100px
       el.style.fontSize = '100px'
       lineEls.forEach((L) => {
         L.style.width = 'max-content'
         L.style.justifyContent = 'flex-start'
       })
-      const natural = Math.max(...lineEls.map((L) => L.getBoundingClientRect().width))
+      const natural = Math.max(...lineEls.map((L) => L.getBoundingClientRect().width / s))
       lineEls.forEach((L) => {
         L.style.width = ''
         L.style.justifyContent = ''
       })
-      if (!natural) return
-      el.style.fontSize = `${(el.clientWidth / natural) * 100 * 0.997}px`
-      letters.forEach((l) => {
-        l.style.width = `${l.getBoundingClientRect().width}px`
-      })
+      if (!natural || !el.clientWidth) return
+      let size = (el.clientWidth / natural) * 100 * 0.997
+      el.style.fontSize = `${size}px`
+      // …but keep the whole hero (and so the name) inside one screen when it
+      // can. Layout boxes only — offsetTop/Height ignore the intro transforms.
+      let limited = false
+      const content = box?.querySelector('.hero-content')
+      const bottom = el.parentElement
+      const section = box?.parentElement
+      if (box && content && bottom) {
+        const vh = window.innerHeight
+        const used = Math.max(0, ...[...content.children].map((c) => c.offsetTop + c.offsetHeight))
+        const chrome = bottom.offsetHeight - el.offsetHeight
+        const ratio = (vh - used - chrome - 8) / el.offsetHeight
+        if (ratio < 1) {
+          // shrink to fit; past half size it's better to let the hero grow
+          size *= Math.max(0.5, ratio)
+          el.style.fontSize = `${size}px`
+          limited = ratio < 0.94
+        }
+        // a hero taller than the screen must scroll normally, not stick
+        section?.classList.toggle('is-tall', used + chrome + el.offsetHeight + 8 > vh + 1)
+      }
+      el.dataset.fit = limited ? 'height' : 'width'
+      masks.forEach((m) => (m.style.width = `${m.getBoundingClientRect().width / s}px`))
     }
     fit()
     const ro = new ResizeObserver(fit)
     ro.observe(el)
+    if (box) ro.observe(box)
     document.fonts?.ready.then(fit)
-    return () => ro.disconnect()
-  }, [isDesktop])
+    document.fonts?.addEventListener?.('loadingdone', fit)
+    return () => {
+      ro.disconnect()
+      document.fonts?.removeEventListener?.('loadingdone', fit)
+    }
+  }, [wide])
 
   useLayoutEffect(() => {
     const el = ref.current
@@ -103,7 +132,7 @@ function HeroName({ interactive }) {
       zone.removeEventListener('pointerleave', onLeave)
       gsap.ticker.remove(apply)
     }
-  }, [interactive, isDesktop])
+  }, [interactive, wide])
 
   return (
     <h1 ref={ref} data-hero-name className="hero-name display relative w-full select-none" aria-label={person.name}>
@@ -118,7 +147,7 @@ function HeroName({ interactive }) {
               <span key={i} className="w-[0.16em] shrink-0" />
             ) : (
               <span key={i} className="hn-mask inline-block shrink-0 pb-[0.02em]">
-                <span className="hn-l inline-flex justify-center">{ch}</span>
+                <span className="hn-l flex w-full justify-center">{ch}</span>
               </span>
             ),
           )}
@@ -166,9 +195,9 @@ export default function Hero({ play }) {
       id="top"
       ref={root}
       data-theme="light"
-      className="hero sticky top-0 h-[100svh] min-h-[600px] overflow-hidden bg-paper"
+      className="hero sticky top-0 min-h-[100svh] overflow-hidden bg-paper"
     >
-      <div className="hero-inner relative flex h-full flex-col origin-[50%_0%]">
+      <div className="hero-inner relative flex min-h-[100svh] flex-col origin-[50%_0%]">
         {/* grid lines */}
         <div className="pointer-events-none absolute inset-0 pad-x" aria-hidden="true">
           <div className="relative grid h-full grid-cols-4">
@@ -182,7 +211,7 @@ export default function Hero({ play }) {
           </div>
         </div>
 
-        <div className="relative grid flex-1 grid-cols-12 gap-x-4 pad-x pt-[calc(var(--header-h)+5vh)] md:gap-x-6">
+        <div className="hero-content relative grid flex-1 grid-cols-12 gap-x-4 pad-x pt-[calc(var(--header-h)+5vh)] md:gap-x-6">
           <div className="col-span-12 lg:col-span-8">
             <p className="hx-fade label mb-[3vh] flex items-center gap-3 text-smoke">
               <span className="text-ink">(01)</span> {hero.kicker}{' '}

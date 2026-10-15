@@ -6,6 +6,7 @@ import qrcode from 'qrcode-generator'
 import { person } from '../../data/content'
 import { LOGO_CELL, LOGO_CELL_R, LOGO_CELLS, LOGO_CURVE, LOGO_SPLIT } from '../ui/logoData'
 import RoomEnv from './RoomEnv'
+import { createSim, renderPoint, setAnchor, stepSim } from './lanyardSim'
 
 extend({ MeshLineGeometry, MeshLineMaterial })
 
@@ -160,7 +161,7 @@ function makeFront() {
 
   // status pill
   g.font = '700 26px "JetBrains Mono Variable", monospace'
-  const pill = 'OPEN TO INTERNSHIPS'
+  const pill = 'OPEN TO INTERNSHIPS & COLLABS'
   const pw = g.measureText(pill).width + 76
   g.fillStyle = INK
   rr(g, 60, 1004, pw, 58, 29)
@@ -280,98 +281,10 @@ function texture(canvas, gl, flipX = false) {
   return t
 }
 
-/* ── physics: a verlet rope + a rigid three-point card ───────────── */
-// No physics engine: a dozen points joined by distance constraints, and
-// the card held rigid by three points (clip, bottom-left, bottom-right).
-// Positions carry the velocity, so a released drag keeps its momentum.
+/* ── physics (see lanyardSim.js) ─────────────────────────────────── */
 const ROPE_SEGS = 12
-const ROPE_LEN = 2.75
-const CLIP_Y = H / 2 + 0.18
-const LOCAL = [
-  new THREE.Vector3(0, CLIP_Y, 0),
-  new THREE.Vector3(-W / 2, -H / 2, 0),
-  new THREE.Vector3(W / 2, -H / 2, 0),
-]
-const GRAVITY = -26
-const STEP = 1 / 120
-const ITER = 8
-
-function createSim(anchor) {
-  const n = ROPE_SEGS + 3 // rope points (incl. anchor) + B + C; A is the rope's last point
-  const pos = []
-  const prev = []
-  const w = [] // inverse mass
-  // start swung out to the right, so the card drops in like a pendulum
-  for (let i = 0; i <= ROPE_SEGS; i++) {
-    const p = anchor.clone().add(new THREE.Vector3((i / ROPE_SEGS) * ROPE_LEN, 0, 0))
-    pos.push(p)
-    prev.push(p.clone())
-    w.push(i === 0 ? 0 : 1)
-  }
-  const A = pos[ROPE_SEGS]
-  w[ROPE_SEGS] = 0.25
-  // lay the card flat to the right of the clip
-  const B = A.clone().add(new THREE.Vector3(CLIP_Y + H / 2, -W / 2, 0))
-  const C = A.clone().add(new THREE.Vector3(CLIP_Y + H / 2, W / 2, 0))
-  pos.push(B, C)
-  prev.push(B.clone(), C.clone())
-  w.push(0.25, 0.25)
-  const links = []
-  for (let i = 0; i < ROPE_SEGS; i++) links.push([i, i + 1, ROPE_LEN / ROPE_SEGS])
-  const a = ROPE_SEGS
-  const b = n - 2
-  const c = n - 1
-  links.push([a, b, LOCAL[0].distanceTo(LOCAL[1])], [a, c, LOCAL[0].distanceTo(LOCAL[2])], [b, c, W])
-  return { pos, prev, w, links, a, b, c, acc: 0, tmp: new THREE.Vector3() }
-}
-
-function stepSim(sim, dt, drag) {
-  const { pos, prev, w, links, tmp } = sim
-  sim.acc = Math.min(sim.acc + dt, 0.05)
-  while (sim.acc >= STEP) {
-    sim.acc -= STEP
-    // integrate
-    for (let i = 0; i < pos.length; i++) {
-      if (!w[i]) continue
-      const p = pos[i]
-      tmp.copy(p).sub(prev[i]).multiplyScalar(0.986) // air drag
-      prev[i].copy(p)
-      p.add(tmp)
-      p.y += GRAVITY * STEP * STEP
-    }
-    // dragging moves the whole card toward the pointer
-    if (drag.active) {
-      const d = drag.delta
-      for (const i of [sim.a, sim.b, sim.c]) pos[i].addScaledVector(d, 0.22)
-    }
-    // a soft spring that turns the card's front back toward the viewer
-    {
-      const B = pos[sim.b]
-      const C = pos[sim.c]
-      const k = drag.active ? 0.004 : 0.012
-      const mx = (B.x + C.x) / 2
-      const mz = (B.z + C.z) / 2
-      C.x += (mx + W / 2 - C.x) * k
-      C.z += (mz - C.z) * k
-      B.x += (mx - W / 2 - B.x) * k
-      B.z += (mz - B.z) * k
-    }
-    // satisfy the links
-    for (let k = 0; k < ITER; k++) {
-      for (const [i, j, len] of links) {
-        const wi = w[i]
-        const wj = w[j]
-        const sum = wi + wj
-        if (!sum) continue
-        tmp.copy(pos[j]).sub(pos[i])
-        const dist = tmp.length() || 1e-6
-        tmp.multiplyScalar((dist - len) / dist / sum)
-        pos[i].addScaledVector(tmp, wi)
-        pos[j].addScaledVector(tmp, -wj)
-      }
-    }
-  }
-}
+// clipY: where the strap meets the card — the top of the metal clip
+const SIM = { segments: ROPE_SEGS, ropeLength: 2.82, card: { w: W, h: H, clipY: SLOT.y + 0.2 } }
 
 const _x = new THREE.Vector3()
 const _y = new THREE.Vector3()
@@ -380,10 +293,7 @@ const _m = new THREE.Vector3()
 const _basis = new THREE.Matrix4()
 
 /* card frame (position + rotation) from its three points */
-function cardPose(sim, target) {
-  const A = sim.pos[sim.a]
-  const B = sim.pos[sim.b]
-  const C = sim.pos[sim.c]
+function cardPose(A, B, C, target) {
   _x.copy(C).sub(B).normalize()
   _m.copy(B).add(C).multiplyScalar(0.5)
   _y.copy(A).sub(_m)
@@ -403,7 +313,8 @@ function Badge({ compact, onDragChange, onHoverChange, running, anchorX }) {
   const anchor = useMemo(() => new THREE.Vector3(), [])
   const halfW = 11.5 * Math.tan(THREE.MathUtils.degToRad(12.5)) * (size.width / size.height)
   anchor.set(halfW * anchorX, 4.3, 0)
-  const sim = useMemo(() => createSim(anchor.clone()), []) // eslint-disable-line react-hooks/exhaustive-deps
+  const sim = useMemo(() => createSim(anchor.clone(), SIM), []) // eslint-disable-line react-hooks/exhaustive-deps
+  const cardPts = useMemo(() => [new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()], [])
   const drag = useMemo(
     () => ({ active: false, local: new THREE.Vector3(), delta: new THREE.Vector3(), plane: new THREE.Plane() }),
     [],
@@ -450,18 +361,21 @@ function Badge({ compact, onDragChange, onHoverChange, running, anchorX }) {
       }
     }
     // the strap is pinned to the top of the section; follow resizes
-    sim.pos[0].copy(anchor)
-    sim.prev[0].copy(anchor)
-    if (running) stepSim(sim, delta, drag)
+    setAnchor(sim, anchor)
+    const alpha = running ? stepSim(sim, delta, drag) : 0
     if (import.meta.env.DEV) {
       // test hook: fast-forward the simulation (dev builds only)
       window.__lanyardStep = (seconds) => {
         for (let t = 0; t < seconds; t += 0.05) stepSim(sim, 0.05, drag)
       }
     }
-    cardPose(sim, card.current)
+    // render between the last two physics states (smooth on any refresh rate)
+    renderPoint(sim, sim.a, alpha, cardPts[0])
+    renderPoint(sim, sim.b, alpha, cardPts[1])
+    renderPoint(sim, sim.c, alpha, cardPts[2])
+    cardPose(cardPts[0], cardPts[1], cardPts[2], card.current)
     card.current.updateMatrixWorld()
-    for (let i = 0; i <= ROPE_SEGS; i++) ropePts[i].copy(sim.pos[ROPE_SEGS - i])
+    for (let i = 0; i <= ROPE_SEGS; i++) renderPoint(sim, ROPE_SEGS - i, alpha, ropePts[i])
     band.current.geometry.setPoints(curve.getPoints(compact ? 28 : 48))
   })
 

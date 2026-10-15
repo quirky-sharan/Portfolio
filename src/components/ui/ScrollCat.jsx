@@ -11,6 +11,7 @@ export default function ScrollCat({ ready }) {
   const [walking, setWalking] = useState(false)
   const [facing, setFacing] = useState(1)
   const [hidden, setHidden] = useState(true)
+  const [onDark, setOnDark] = useState(false)
   const reduce = useReducedMotion()
 
   useEffect(() => {
@@ -28,6 +29,10 @@ export default function ScrollCat({ ready }) {
       const pad = 12
       el.style.transform = `translate3d(${pad + p * (window.innerWidth - w - pad * 2)}px,0,0)`
       setHidden(footerIn || y < window.innerHeight * 0.6)
+      // light outline over dark sections so the black cat doesn't vanish
+      const r = el.getBoundingClientRect()
+      const under = document.elementFromPoint(r.left + r.width / 2, r.bottom - 4)
+      setOnDark(under?.closest('[data-theme]')?.dataset.theme === 'dark')
       if (lastP >= 0 && Math.abs(p - lastP) > 0.00005) {
         setFacing(p > lastP ? 1 : -1)
         setWalking(true)
@@ -73,7 +78,7 @@ export default function ScrollCat({ ready }) {
       aria-hidden="true"
     >
       <div style={{ transform: `scaleX(${facing})`, transition: 'transform .25s' }}>
-        <Cat pose="walk" walking={walking} />
+        <Cat pose="walk" walking={walking} line={onDark ? '#eeece6' : undefined} />
       </div>
     </div>
   )

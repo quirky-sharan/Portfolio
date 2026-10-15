@@ -77,7 +77,7 @@ export default function Loader({ onReveal, onDone }) {
         if (nameEl) {
           const r = nameEl.getBoundingClientRect()
           const t = r.top - mh * 0.93 + r.height * 0.06
-          if (t > 70) top = t
+          if (t > 70 && t + mh < window.innerHeight) top = t
         }
         cat.style.top = `${top}px`
       }

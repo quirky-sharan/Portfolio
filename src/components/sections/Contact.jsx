@@ -2,7 +2,8 @@ import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { gsap, useGSAP } from '../../lib/gsap'
 import { useClock, useIsDesktop, useNearViewport } from '../../lib/hooks'
-import { hellos, person } from '../../data/content'
+import { contact, hellos, person } from '../../data/content'
+import { parseEmphasis } from '../../lib/tokenize'
 import ErrorBoundary, { hasWebGL } from '../ui/ErrorBoundary'
 import Magnetic from '../ui/Magnetic'
 import RollText from '../ui/RollText'
@@ -100,6 +101,19 @@ function Action({ href, children, external, cursor }) {
   )
 }
 
+/* *emphasis* → italic serif */
+function Emph({ text }) {
+  return parseEmphasis(text).map((seg, i) =>
+    seg.em ? (
+      <span key={i} className="serif italic">
+        {seg.text}
+      </span>
+    ) : (
+      seg.text
+    ),
+  )
+}
+
 /* Flat stand-in when WebGL is unavailable: the same badge, hanging still. */
 function StaticBadge() {
   return (
@@ -186,9 +200,17 @@ export default function Contact() {
             <Hello />
           </h2>
           <p className="ct-in serif mt-6 max-w-[26ch] text-[clamp(24px,2.3vw,38px)] leading-[1.1] text-ink/80">
-            Internships, hackathon teams, a frontend that needs to <span className="italic">feel</span> something — say
-            hi.
+            <Emph text={contact.lead} />
           </p>
+          <div className="ct-in mt-6 flex max-w-[40ch] flex-col items-start gap-3 rounded-[16px] border border-ink/12 bg-paper-2/60 p-5">
+            <span className="label inline-flex items-center gap-2 rounded-full bg-lime px-3 py-1.5 text-ink">
+              <span className="size-2 rounded-full bg-ink" aria-hidden="true" />
+              {contact.collabTag}
+            </span>
+            <p className="text-[clamp(17px,1.35vw,21px)] leading-[1.4] text-ink/85">
+              <Emph text={contact.collab} />
+            </p>
+          </div>
 
           <div className="ct-in mt-12">
             <p className="label mb-3 text-smoke">Email — click to copy</p>
