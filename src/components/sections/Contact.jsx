@@ -117,10 +117,10 @@ function Emph({ text }) {
 /* Flat stand-in when WebGL is unavailable: the same badge, hanging still. */
 function StaticBadge() {
   return (
-    <div className="absolute left-1/2 top-0 flex -translate-x-1/2 flex-col items-center">
+    <div className="absolute left-1/2 top-0 flex -translate-x-1/2 flex-col items-center lg:left-3/4">
       <span className="block h-[22vh] w-6 bg-signal" />
       <div className="w-[min(280px,70vw)] rounded-[14px] border border-ink/15 bg-[#f1efe9] p-5 shadow-[0_30px_60px_-30px_rgba(0,0,0,0.4)]">
-        <Logo size={44} />
+        <Logo size={44} decorative />
         <p className="display mt-6 text-[64px] leading-[0.85]">
           {person.first}
           <br />

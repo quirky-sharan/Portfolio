@@ -14,6 +14,8 @@ export default function SplitReveal({ as = 'h2', className = '', children, delay
         type: 'lines,words',
         mask: 'lines',
         autoSplit: true,
+        // aria-label is only valid on headings; leave paragraphs readable as-is
+        aria: /^h[1-6]$/.test(Tag) ? 'auto' : 'none',
         onSplit: (self) => {
           if (played) return
           return gsap.from(self.words, {

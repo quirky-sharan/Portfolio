@@ -126,7 +126,13 @@ function Sweep({ id, lenses, x, y, h }) {
         ))}
       </clipPath>
       <g clipPath={`url(#${id})`}>
-        <path className="cat__sweep" d={`M${x + h * 0.3} ${y - h}L${x - h * 0.3} ${y + h}`} stroke={WHITE} strokeWidth="5" opacity=".55" />
+        <path
+          className="cat__sweep"
+          d={`M${x + h * 0.3} ${y - h}L${x - h * 0.3} ${y + h}`}
+          stroke={WHITE}
+          strokeWidth="5"
+          opacity=".55"
+        />
       </g>
     </>
   )

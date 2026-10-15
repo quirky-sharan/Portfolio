@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { gsap, ScrollTrigger, useGSAP } from '../../lib/gsap'
+import { useMediaQuery } from '../../lib/hooks'
 import { parseEmphasis, tokenize, TOKEN_COLORS } from '../../lib/tokenize'
 import { languages, manifesto, stats } from '../../data/content'
 import Switch from '../ui/Switch'
@@ -58,6 +59,7 @@ function TokenText({ tokens }) {
 export default function About() {
   const root = useRef(null)
   const [tokens, setTokens] = useState(false)
+  const wide = useMediaQuery('(min-width: 640px)')
   const tokenList = useMemo(() => tokenize(segments), [])
   const chars = useMemo(() => segments.reduce((n, s) => n + s.text.length, 0), [])
 
@@ -111,11 +113,12 @@ export default function About() {
         },
       })
       const stream = () => {
-        if (Math.abs(target - head) < 0.01) return
-        head += (target - head) * 0.16
+        const d = target - head
+        if (d === 0) return
+        head = Math.abs(d) < 0.01 ? target : head + d * 0.16
         const c = Math.floor(head)
         words.forEach((w, i) => {
-          const s = i < c - 3 ? 'lit' : i < c ? 'hot' : i === c ? 'head' : ''
+          const s = i < c - 3 ? 'lit' : i < c ? 'hot' : i === c && head > 0 && c < words.length ? 'head' : ''
           if (s !== state[i]) {
             state[i] = s
             w.dataset.s = s
@@ -147,7 +150,8 @@ export default function About() {
       })
       return () => gsap.ticker.remove(stream)
     },
-    { scope: root },
+    // HeroName swaps its letter nodes at this breakpoint — rebuild with it
+    { scope: root, dependencies: [wide], revertOnUpdate: true },
   )
 
   const onToggle = (v) => {

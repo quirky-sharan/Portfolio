@@ -75,9 +75,6 @@ function step(sim, drag) {
     p.y += GRAVITY * STEP * STEP
   }
 
-  // dragging moves the whole card toward the pointer
-  if (drag?.active) for (const i of [a, b, c]) pos[i].addScaledVector(drag.delta, 0.22)
-
   // a soft spring that turns the card's front back toward the viewer
   const B = pos[b]
   const C = pos[c]
@@ -110,11 +107,22 @@ function step(sim, drag) {
 /* Advance by a frame's worth of time; returns the interpolation factor. */
 export function stepSim(sim, dt, drag) {
   sim.acc = Math.min(sim.acc + dt, 0.05)
+  // the pointer offset is measured once per rendered frame, so pull once per
+  // frame too (pulling in every substep over-corrects and oscillates)
+  if (drag?.active && sim.acc >= STEP)
+    for (const i of [sim.a, sim.b, sim.c]) sim.pos[i].addScaledVector(drag.delta, 0.35)
   while (sim.acc >= STEP) {
     sim.acc -= STEP
     step(sim, drag)
   }
   return sim.acc / STEP
+}
+
+/* How much the lanyard is still moving (largest squared step of any point). */
+export function simEnergy(sim) {
+  let max = 0
+  for (let i = 0; i < sim.pos.length; i++) max = Math.max(max, sim.pos[i].distanceToSquared(sim.prev[i]))
+  return max
 }
 
 /* Interpolated position of point i for rendering. */

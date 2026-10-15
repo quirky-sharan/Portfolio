@@ -24,9 +24,13 @@ export default function Results() {
       const rows = q('.rs-row')
       gsap.set(rows, { xPercent: -8, clipPath: 'inset(0 100% 0 0)' })
       let raced = false
+      let said = ''
+      const say = (t) => {
+        if (t !== said) status.textContent = said = t
+      }
       const race = () => {
         lights.forEach((l) => l.classList.remove('is-on'))
-        status.textContent = 'Lights out — and away we go'
+        say('Lights out — and away we go')
         if (raced) return
         raced = true
         gsap.to(rows, { xPercent: 0, clipPath: 'inset(0 0% 0 0)', duration: 0.9, ease: 'expo', stagger: 0.07 })
@@ -39,7 +43,7 @@ export default function Results() {
           if (self.progress >= 0.999) return race()
           const on = Math.min(5, Math.floor(self.progress * 6))
           lights.forEach((l, i) => l.classList.toggle('is-on', i < on))
-          status.textContent = on ? `Start sequence ${on}/5` : 'Grid is forming'
+          say(on ? `Start sequence ${on}/5` : 'Grid is forming')
         },
         onLeave: race,
         onRefresh: (self) => self.progress >= 0.999 && race(),
@@ -88,7 +92,7 @@ export default function Results() {
                 </span>
               ))}
             </div>
-            <span className="rs-status label text-paper/60" aria-live="polite">
+            <span className="rs-status label text-paper/60" aria-hidden="true">
               Grid is forming
             </span>
           </div>

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { memo, useEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { Canvas, extend, useFrame, useThree } from '@react-three/fiber'
 import { MeshLineGeometry, MeshLineMaterial } from 'meshline'
@@ -6,7 +6,7 @@ import qrcode from 'qrcode-generator'
 import { person } from '../../data/content'
 import { LOGO_CELL, LOGO_CELL_R, LOGO_CELLS, LOGO_CURVE, LOGO_SPLIT } from '../ui/logoData'
 import RoomEnv from './RoomEnv'
-import { createSim, renderPoint, setAnchor, stepSim } from './lanyardSim'
+import { createSim, renderPoint, setAnchor, simEnergy, stepSim } from './lanyardSim'
 
 extend({ MeshLineGeometry, MeshLineMaterial })
 
@@ -307,7 +307,7 @@ function cardPose(A, B, C, target) {
 
 /* ── the badge ───────────────────────────────────────────────────── */
 function Badge({ compact, onDragChange, onHoverChange, running, anchorX }) {
-  const { gl, size, camera, raycaster, pointer } = useThree()
+  const { gl, size, camera, raycaster, pointer, invalidate } = useThree()
   const band = useRef(null)
   const card = useRef(null)
   const anchor = useMemo(() => new THREE.Vector3(), [])
@@ -320,6 +320,13 @@ function Badge({ compact, onDragChange, onHoverChange, running, anchorX }) {
     [],
   )
   const hit = useMemo(() => new THREE.Vector3(), [])
+  // rendering is on demand: draw while the card moves, then sleep
+  const calm = useRef(0)
+  const asleep = useRef(true)
+  const wake = () => {
+    calm.current = 0
+    invalidate()
+  }
   const ropePts = useMemo(() => Array.from({ length: ROPE_SEGS + 1 }, () => new THREE.Vector3()), [])
   const curve = useMemo(() => new THREE.CatmullRomCurve3(ropePts, false, 'centripetal'), [ropePts])
 
@@ -362,11 +369,15 @@ function Badge({ compact, onDragChange, onHoverChange, running, anchorX }) {
     }
     // the strap is pinned to the top of the section; follow resizes
     setAnchor(sim, anchor)
-    const alpha = running ? stepSim(sim, delta, drag) : 0
+    // after a nap the clock delta spans the whole nap; resume from one frame
+    const dt = asleep.current ? 1 / 60 : delta
+    asleep.current = false
+    const alpha = running ? stepSim(sim, dt, drag) : 0
     if (import.meta.env.DEV) {
       // test hook: fast-forward the simulation (dev builds only)
       window.__lanyardStep = (seconds) => {
         for (let t = 0; t < seconds; t += 0.05) stepSim(sim, 0.05, drag)
+        wake()
       }
     }
     // render between the last two physics states (smooth on any refresh rate)
@@ -377,7 +388,20 @@ function Badge({ compact, onDragChange, onHoverChange, running, anchorX }) {
     card.current.updateMatrixWorld()
     for (let i = 0; i <= ROPE_SEGS; i++) renderPoint(sim, ROPE_SEGS - i, alpha, ropePts[i])
     band.current.geometry.setPoints(curve.getPoints(compact ? 28 : 48))
+    if (running) {
+      // a few still frames in a row (not one turning point of a swing) = at rest
+      calm.current = drag.active || simEnergy(sim) > 1e-10 ? 0 : calm.current + 1
+      if (calm.current < 20) invalidate()
+      else asleep.current = true
+    }
   })
+
+  // first frame, and whenever the section scrolls back into view
+  useEffect(() => {
+    if (!running) return
+    calm.current = 0
+    invalidate()
+  }, [running, invalidate])
 
   const onDown = (e) => {
     e.stopPropagation()
@@ -385,6 +409,7 @@ function Badge({ compact, onDragChange, onHoverChange, running, anchorX }) {
       // touch: a flick, never a scroll-blocking drag
       const kick = new THREE.Vector3((Math.random() - 0.5) * 0.06, 0.035, -0.05)
       for (const i of [sim.a, sim.b, sim.c]) sim.prev[i].sub(kick)
+      wake()
       return
     }
     e.target.setPointerCapture?.(e.pointerId)
@@ -393,11 +418,13 @@ function Badge({ compact, onDragChange, onHoverChange, running, anchorX }) {
     drag.plane.setFromNormalAndCoplanarPoint(new THREE.Vector3(0, 0, 1), e.point)
     drag.delta.set(0, 0, 0)
     onDragChange?.(true)
+    wake()
   }
   const onUp = (e) => {
     e.target.releasePointerCapture?.(e.pointerId)
     drag.active = false
     onDragChange?.(false)
+    wake()
   }
 
   return (
@@ -462,7 +489,9 @@ function Badge({ compact, onDragChange, onHoverChange, running, anchorX }) {
   )
 }
 
-export default function LanyardScene({ visible, compact, onDragChange, onHoverChange, anchorX = 0 }) {
+// memo: Contact re-renders every second for its clock, and each re-render
+// would wake the on-demand canvas for a frame
+export default memo(function LanyardScene({ visible, compact, onDragChange, onHoverChange, anchorX = 0 }) {
   const [ready, setReady] = useState(false)
 
   // the card is drawn with the site fonts — wait for them
@@ -478,7 +507,7 @@ export default function LanyardScene({ visible, compact, onDragChange, onHoverCh
   return (
     <Canvas
       className="!absolute inset-0"
-      frameloop={visible ? 'always' : 'never'}
+      frameloop={visible ? 'demand' : 'never'}
       dpr={compact ? [1, 1.5] : [1, 2]}
       camera={{ position: [0, 0, 11.5], fov: 25 }}
       gl={{ antialias: true, alpha: true, toneMapping: THREE.NeutralToneMapping }}
@@ -498,4 +527,4 @@ export default function LanyardScene({ visible, compact, onDragChange, onHoverCh
       )}
     </Canvas>
   )
-}
+})

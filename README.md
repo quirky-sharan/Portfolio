@@ -51,7 +51,7 @@ You need **Node.js 22.12 or newer** — the LTS from [nodejs.org](https://nodejs
 | --- | --- | --- |
 | Double-click **`start.bat`** | Double-click **`start.command`** | `bash start.command` |
 
-It checks your Node version, installs packages the first time (and again whenever they change), starts the site and opens your browser. Keep the window open while you use it; **Ctrl + C** stops it.
+It checks your Node version, installs packages the first time (and again whenever they change), starts the site and opens your browser. Keep the window open while you use it; **Ctrl + C** stops it (on Windows, then press **Y**). It also works from a network drive or a WSL folder.
 
 > If macOS blocks it the first time, open **System Settings → Privacy & Security** and click **Open Anyway** — or open Terminal in the folder and run `bash start.command`.
 
@@ -84,6 +84,8 @@ Then open http://localhost:5173. (The `git checkout` line is only needed until t
 - **Port 5173 already in use** — Vite picks the next free port; use the URL it prints.
 - **Windows: `EACCES: permission denied … 5173`** — Hyper-V/WSL/Docker reserved that port. Run `npm run dev -- --port 3000`.
 - **Windows on ARM: "Required DLL was not found"** — install the [Visual C++ runtime for ARM64](https://aka.ms/vs/17/release/vc_redist.arm64.exe).
+- **"This file was opened on its own"** — you double-clicked the launcher inside the zip. Right-click the zip → *Extract All*, then run it from the extracted folder.
+- **Installing is very slow or fails with `EPERM` / `EBUSY`** — the folder is probably inside OneDrive (Desktop and Documents often are). Move it somewhere like `C:\dev\Portfolio` and run `start.bat` again.
 - **Weird install errors after switching branches** — delete `node_modules` and run `npm install` again.
 - **3D sections look blank** — your browser has WebGL/hardware acceleration turned off; the rest of the site still works and the 3D falls back gracefully.
 
