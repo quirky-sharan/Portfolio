@@ -11,15 +11,16 @@ Built with **React 19 · Vite · Tailwind v4 · GSAP (ScrollTrigger, SplitText) 
 
 | Section | What it does |
 | --- | --- |
-| **Loader** | The name resolves through Gujarati → Hindi → Japanese → English, then *Tok* (the little token-bot) shoves the black curtain off-screen to reveal the hero. Plays short on repeat visits in the same tab. |
+| **Loader** | The name resolves through Gujarati → Hindi → Japanese → English, then a cat in a vermilion hoodie and shades shoves the black curtain off-screen to reveal the hero. Plays short on repeat visits in the same tab. |
 | **Hero** | Full-bleed name on Archivo's variable `wght`/`wdth` axes — letters thin out and widen under the cursor. “Half *model.* Half *motion.*” rendered as LLM tokens. Live Vellore clock. |
-| **About** | Manifesto that lights up word-by-word as you scroll. The **Human ⇄ Tokens** switch re-renders it the way a language model reads it. Slot-machine stats, four scripts. |
+| **About** | Manifesto that streams in as you scroll, each word flashing as a coloured token behind a blinking caret. The **Human ⇄ Tokens** switch re-renders it the way a language model reads it. Slot-machine stats, four scripts. |
 | **Work** | Pinned, one project per scroll. Grid-cell wipes between projects, rolling index, generative covers. The **Visual ⇄ Brief** switch flips the card to show the short intro. On phones the brief opens underneath. |
 | **Side quests** | Smaller builds pulled from GitHub. |
-| **Toolbox** (3D) | Every skill as a glossy 3D chip with real 2D physics — drag, throw, shake (tap to flick on phones). |
-| **Results** | Hackathons as an F1 timing board. |
-| **The path** | Internships, open source, clubs, school. |
-| **Contact** (3D) | “Let's talk” in every language, click-to-copy email, call/WhatsApp, and a 3D **hanko** (Japanese name seal) you can click to stamp シャラン onto the page. |
+| **Toolbox** (3D) | Every skill as a glossy 3D chip with real 2D physics — drag, throw, shake (tap to flick on phones). Scroll fast and the chips rattle. |
+| **Results** | Hackathons as an F1 timing board — five start lights come on as you scroll in, then lights out and the rows race onto the board. |
+| **The path** | Internships, open source, clubs, school — dealt from a deck of cards as you scroll. |
+| **Everywhere** | Big type leans into your scroll speed, headings rise word by word, the logo's pixels re-render on hover, and a tiny cat walks the bottom edge as a scroll-progress bar. |
+| **Contact** (3D) | “Let's talk” in English, Hindi and Gujarati, click-to-copy email, call/WhatsApp, and a 3D **lanyard ID card** you can grab and fling (its QR code opens a WhatsApp chat). |
 
 ---
 
@@ -122,8 +123,8 @@ src/
   components/
     sections/              ← Loader, Header, Hero, About, Work, Toolbox, Results, Path, Contact, Footer…
     covers/                ← generative project covers (SVG)
-    three/                 ← ToolboxScene (physics chips), HankoScene (3D seal)
-    ui/                    ← Mascot, Switch, Token, RollNumber, Magnetic, Cursor…
+    three/                 ← ToolboxScene (physics chips), LanyardScene (ID card + rope physics)
+    ui/                    ← Cat, ScrollCat, Logo, Switch, Token, RollNumber, Magnetic, Cursor…
   lib/                     ← gsap setup, Lenis, hooks, tokenizer
 public/                    ← favicon, og image, project screenshots
 ```

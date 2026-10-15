@@ -21,7 +21,7 @@ export default function Footer() {
         ease: 'back.out(1.7)',
         scrollTrigger: { trigger: q('.ft-name')[0], start: 'top 95%', once: true },
       })
-      gsap.from(q('.ft-mascot'), {
+      gsap.from(q('.ft-cat'), {
         yPercent: 100,
         duration: 1.2,
         delay: 0.5,
@@ -95,7 +95,7 @@ export default function Footer() {
       </div>
 
       <div className="relative mt-[12vh] pad-x">
-        <div className="ft-mascot pointer-events-none absolute bottom-[86%] right-[6%] w-[clamp(90px,11vw,170px)]">
+        <div className="ft-cat pointer-events-none absolute bottom-[86%] right-[6%] w-[clamp(90px,11vw,170px)]">
           <Cat pose="wave" walking={false} line="#eeece6" />
         </div>
         <p ref={name} data-skew className="ft-name display mask flex leading-[0.8]" aria-hidden="true">

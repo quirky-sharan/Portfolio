@@ -13,7 +13,7 @@ function waitForFonts(timeout = 1600) {
 
 /*
  * Intro: the name resolves through every script Sharan speaks, then
- * Tok walks in and shoves the black curtain off-screen, revealing the
+ * the cat strolls in and shoves the black curtain off-screen, revealing the
  * hero underneath (huyml.co's push, reimagined).
  */
 export default function Loader({ onReveal, onDone }) {
@@ -25,7 +25,7 @@ export default function Loader({ onReveal, onDone }) {
       let cancelled = false
       const q = gsap.utils.selector(root)
       const curtain = q('.ld-curtain')[0]
-      const mascot = q('.ld-mascot')[0]
+      const cat = q('.ld-cat')[0]
       const counter = q('.ld-count')[0]
       const names = q('.ld-name')
       const langs = q('.ld-lang')
@@ -44,7 +44,7 @@ export default function Loader({ onReveal, onDone }) {
       document.documentElement.style.overflow = 'hidden'
       document.getElementById('boot')?.remove()
 
-      // The page is usable the moment the curtain is gone; Tok just
+      // The page is usable the moment the curtain is gone; the cat just
       // finishes walking off-screen on top of it.
       let released = false
       const release = () => {
@@ -67,11 +67,11 @@ export default function Loader({ onReveal, onDone }) {
 
       gsap.set(names, { yPercent: 110 })
       gsap.set(q('.ld-meta'), { autoAlpha: 0, y: 10 })
-      mascot.style.transform = `translate3d(${-mascot.offsetWidth - 20}px,0,0)`
+      cat.style.transform = `translate3d(${-cat.offsetWidth - 20}px,0,0)`
 
-      // Tok walks along the top of the hero name if there is room for it.
-      const placeMascot = () => {
-        const mh = mascot.offsetHeight
+      // The cat walks along the top of the hero name if there is room for it.
+      const placeCat = () => {
+        const mh = cat.offsetHeight
         let top = window.innerHeight / 2 - mh / 2
         const nameEl = document.querySelector('[data-hero-name]')
         if (nameEl) {
@@ -79,13 +79,13 @@ export default function Loader({ onReveal, onDone }) {
           const t = r.top - mh * 0.93 + r.height * 0.06
           if (t > 70) top = t
         }
-        mascot.style.top = `${top}px`
+        cat.style.top = `${top}px`
       }
 
       const run = async () => {
         await waitForFonts()
         if (cancelled) return
-        placeMascot()
+        placeCat()
 
         if (reduce) {
           onReveal?.()
@@ -133,13 +133,13 @@ export default function Loader({ onReveal, onDone }) {
         tl.to(
           edge,
           {
-            x: () => vw() + mascot.offsetWidth + 40,
+            x: () => vw() + cat.offsetWidth + 40,
             duration: seen ? 1.2 : 2.2,
             ease: 'push',
             onUpdate: () => {
               const clip = Math.min(100, (Math.max(0, edge.x) / vw()) * 100)
               curtain.style.clipPath = `inset(0 0 0 ${clip}%)`
-              mascot.style.transform = `translate3d(${edge.x - mascot.offsetWidth}px,0,0)`
+              cat.style.transform = `translate3d(${edge.x - cat.offsetWidth}px,0,0)`
               if (clip >= 100) release()
             },
           },
@@ -201,7 +201,7 @@ export default function Loader({ onReveal, onDone }) {
         </div>
       </div>
 
-      <div className="ld-mascot absolute left-0 top-1/2 will-change-transform">
+      <div className="ld-cat absolute left-0 top-1/2 will-change-transform">
         <Cat pose="push" style={{ width: 'clamp(170px, 29vh, 310px)', display: 'block' }} />
       </div>
     </div>

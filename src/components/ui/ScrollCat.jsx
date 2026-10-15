@@ -3,7 +3,7 @@ import { smooth } from '../../lib/smooth'
 import { useReducedMotion } from '../../lib/hooks'
 import Cat from './Cat'
 
-/* The mascot doubles as a scroll-progress bar: it walks along the bottom
+/* The cat doubles as a scroll-progress bar: it walks along the bottom
    edge as you scroll, turns around when you scroll back up, and steps
    aside when the footer (where it waves goodbye) comes into view. */
 export default function ScrollCat({ ready }) {
