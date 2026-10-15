@@ -1,2 +1,238 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
+/* ── Script subsets (only the glyphs the site uses, ~9 KB total) ── */
+@font-face {
+  font-family: 'Sharan Gujarati';
+  src: url('./assets/fonts/scripts-gu.woff2') format('woff2');
+  font-weight: 700;
+  font-display: block;
+}
+@font-face {
+  font-family: 'Sharan Devanagari';
+  src: url('./assets/fonts/scripts-hi.woff2') format('woff2');
+  font-weight: 700;
+  font-display: block;
+}
+@font-face {
+  font-family: 'Sharan Japanese';
+  src: url('./assets/fonts/scripts-ja.woff2') format('woff2');
+  font-weight: 700;
+  font-display: block;
+}
+
+@theme {
+  --color-paper: #eeece6;
+  --color-paper-2: #e4e1d8;
+  --color-ink: #0e0e0c;
+  --color-ink-2: #1b1b18;
+  --color-smoke: #6f6e68;
+  --color-ash: #a3a29b;
+  --color-signal: #ff3b1f;
+  --color-lime: #d4f25a;
+  --color-pink: #f6b8e0;
+  --color-sky: #a9d2f5;
+  --color-lilac: #c7b8ff;
+  --color-sand: #f3d68c;
+  --color-mint: #9ee6c6;
+
+  --font-display: 'Archivo Variable', 'Archivo', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Archivo Variable', 'Archivo', ui-sans-serif, system-ui, sans-serif;
+  --font-serif: 'Instrument Serif', 'Times New Roman', serif;
+  --font-mono: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, monospace;
+  --font-gu: 'Sharan Gujarati', 'Noto Sans Gujarati', sans-serif;
+  --font-hi: 'Sharan Devanagari', 'Noto Sans Devanagari', sans-serif;
+  --font-ja: 'Sharan Japanese', 'Noto Sans JP', 'Hiragino Sans', sans-serif;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+:root {
+  --pad: clamp(16px, 2.2vw, 36px);
+  --header-h: 64px;
+  color-scheme: light;
+}
+
+/* ── Base ─────────────────────────────────────────────────────── */
+@layer base {
+  html {
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
+    scrollbar-color: #8b8a83 transparent;
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background: var(--color-ink);
+  }
+
+  body {
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-stretch: 100%;
+    overflow-x: clip;
+  }
+
+  ::selection {
+    background: var(--color-signal);
+    color: var(--color-paper);
+  }
+
+  img,
+  svg,
+  canvas {
+    display: block;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  button {
+    cursor: pointer;
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: 0;
+    padding: 0;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-signal);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+}
+
+/* Lenis */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+/* Custom cursor hides the native one only once JS has confirmed a fine pointer. */
+html.has-cursor,
+html.has-cursor * {
+  cursor: none !important;
+}
+
+/* ── Type helpers ─────────────────────────────────────────────── */
+@utility font-gu {
+  font-family: var(--font-gu);
+  font-weight: 700;
+}
+@utility font-hi {
+  font-family: var(--font-hi);
+  font-weight: 700;
+}
+@utility font-ja {
+  font-family: var(--font-ja);
+  font-weight: 700;
+}
+
+/* Condensed display cut of Archivo */
+@utility display {
+  font-family: var(--font-display);
+  font-stretch: 62%;
+  font-weight: 800;
+  line-height: 0.82;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+
+/* Tiny mono label */
+@utility label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.3;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+@utility serif {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+@utility pad-x {
+  padding-left: var(--pad);
+  padding-right: var(--pad);
+}
+
+@utility mask {
+  overflow: hidden;
+  overflow: clip;
+}
+
+/* Static film grain — painted once, costs nothing per frame */
+.grain {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  opacity: 0.075;
+  transform: translateZ(0);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .9 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+/* Checkered strip (race flag) */
+.checkers {
+  --c: 10px;
+  background-image: conic-gradient(currentColor 25%, transparent 0 50%, currentColor 0 75%, transparent 0);
+  background-size: calc(var(--c) * 2) calc(var(--c) * 2);
+}
+
+/* Outline display text */
+.outline-text {
+  color: transparent;
+  -webkit-text-stroke: var(--stroke-w, 1.5px) var(--stroke, var(--color-ink));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+@keyframes scrollcue {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(200%);
+  }
+}
+
+/* token tooltip in the manifesto's token view */
+.tk:hover::after {
+  content: attr(data-id);
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 4px);
+  font: 500 11px/1 var(--font-mono);
+  font-style: normal;
+  letter-spacing: 0.04em;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  padding: 4px 6px;
+  border-radius: 3px;
+  white-space: nowrap;
+  z-index: 2;
+}
