@@ -6,6 +6,7 @@ import RoomEnv from './RoomEnv'
 import Matter from 'matter-js'
 import monoFont from '@fontsource/jetbrains-mono/files/jetbrains-mono-latin-700-normal.woff?url'
 import { toolbox } from '../../data/content'
+import { smooth } from '../../lib/smooth'
 
 const { Engine, Bodies, Body, Composite, Constraint, Query } = Matter
 const FOV = 30
@@ -214,6 +215,22 @@ function Interaction({ engineRef, chips, active, shakeRef, compact }) {
       })
     }
   }, [engineRef, shakeRef])
+
+  // scrolling fast rattles the box: chips hop with your scroll speed
+  useFrame(() => {
+    const ctx = engineRef.current
+    const v = smooth.lenis?.velocity ?? 0
+    if (!ctx || Math.abs(v) < 18) return
+    const now = performance.now()
+    if (now - (ctx.lastRattle ?? 0) < 160) return
+    ctx.lastRattle = now
+    const hop = Math.min(Math.abs(v) * 0.22, 13)
+    ctx.bodies.forEach((b) => {
+      if (!b || Math.random() > 0.45) return
+      Body.setVelocity(b, { x: b.velocity.x + (Math.random() - 0.5) * 4, y: -hop * (0.6 + Math.random() * 0.6) })
+      Body.setAngularVelocity(b, b.angularVelocity + (Math.random() - 0.5) * 0.12)
+    })
+  })
 
   // pointer: drag + throw on mouse, flick on touch
   useEffect(() => {

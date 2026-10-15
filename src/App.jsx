@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { startSmoothScroll, smooth } from './lib/smooth'
 import { ScrollTrigger } from './lib/gsap'
+import { startVelocitySkew } from './lib/velocity'
 import Loader from './components/sections/Loader'
 import Header from './components/sections/Header'
 import Hero from './components/sections/Hero'
@@ -13,6 +14,7 @@ import Path from './components/sections/Path'
 import Contact from './components/sections/Contact'
 import Footer from './components/sections/Footer'
 import Cursor from './components/ui/Cursor'
+import ScrollCat from './components/ui/ScrollCat'
 
 export default function App() {
   const [revealed, setRevealed] = useState(false)
@@ -20,7 +22,11 @@ export default function App() {
 
   useEffect(() => {
     startSmoothScroll()
-    return () => smooth.dispose?.()
+    const stopSkew = startVelocitySkew()
+    return () => {
+      stopSkew()
+      smooth.dispose?.()
+    }
   }, [])
 
   // Scroll positions go stale whenever the page height shifts (fonts,
@@ -70,6 +76,7 @@ export default function App() {
       <Footer />
       <div className="grain" aria-hidden="true" />
       <Cursor />
+      <ScrollCat ready={ready} />
     </>
   )
 }

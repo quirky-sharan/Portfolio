@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 import { gsap, useGSAP } from '../../lib/gsap'
 import { path } from '../../data/content'
+import SplitReveal from '../ui/SplitReveal'
 
 const TONES = [
   'var(--color-lime)',
@@ -17,13 +18,43 @@ export default function Path() {
   useGSAP(
     () => {
       const q = gsap.utils.selector(root)
-      gsap.from(q('.pt-card'), {
-        y: 60,
-        autoAlpha: 0,
-        rotate: (i) => (i % 2 ? 2 : -2),
-        duration: 1.2,
-        stagger: 0.08,
-        scrollTrigger: { trigger: q('.pt-grid')[0], start: 'top 80%', once: true },
+      const grid = q('.pt-grid')[0]
+      const cards = q('.pt-card')
+      const mm = gsap.matchMedia()
+      // Desktop: the cards start as one stacked deck and get dealt into the
+      // grid as you scroll.
+      mm.add('(min-width: 640px) and (prefers-reduced-motion: no-preference)', () => {
+        const deckX = () => grid.offsetWidth / 2
+        const deckY = 150
+        cards.forEach((c, i) => (c.style.zIndex = String(cards.length - i)))
+        gsap.fromTo(
+          cards,
+          {
+            x: (i, el) => deckX() - (el.offsetLeft + el.offsetWidth / 2),
+            y: (i, el) => deckY - (el.offsetTop + el.offsetHeight / 2) + i * -3,
+            rotation: (i) => [-8, 5, -3, 9, -6, 3][i % 6],
+            scale: 0.94,
+          },
+          {
+            x: 0,
+            y: 0,
+            rotation: 0,
+            scale: 1,
+            ease: 'power1.inOut',
+            stagger: 0.06,
+            scrollTrigger: { trigger: grid, start: 'top 88%', end: 'top 22%', scrub: 0.8, invalidateOnRefresh: true },
+          },
+        )
+      })
+      mm.add('(max-width: 639px), (prefers-reduced-motion: reduce)', () => {
+        gsap.from(cards, {
+          y: 50,
+          autoAlpha: 0,
+          rotate: (i) => (i % 2 ? 3 : -3),
+          duration: 1,
+          stagger: 0.08,
+          scrollTrigger: { trigger: grid, start: 'top 85%', once: true },
+        })
       })
     },
     { scope: root },
@@ -36,14 +67,14 @@ export default function Path() {
           <p className="label">
             (06) <span className="text-smoke">The path</span>
           </p>
-          <h2 className="serif mt-5 text-[clamp(44px,5.6vw,100px)] leading-[0.9]">
+          <SplitReveal as="h2" className="serif mt-5 text-[clamp(44px,5.6vw,100px)] leading-[0.9]">
             Where I&apos;ve been, <span className="italic">where I&apos;m headed</span>
             <span className="text-signal">.</span>
-          </h2>
+          </SplitReveal>
         </div>
       </div>
 
-      <div className="pt-grid mt-[8vh] grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="pt-grid relative mt-[8vh] grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {path.map((p, i) => (
           <article
             key={p.where}

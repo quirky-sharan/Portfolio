@@ -1,7 +1,8 @@
 @echo off
+rem Change folder first: delayed expansion would mangle a "!" in the path.
+cd /d "%~dp0"
 setlocal EnableExtensions EnableDelayedExpansion
 title Sharan Soni - Portfolio
-cd /d "%~dp0"
 
 echo.
 echo    SHARAN SONI  -  PORTFOLIO
@@ -18,7 +19,7 @@ if errorlevel 1 (
   exit /b 1
 )
 
-rem ---- 2. Node.js new enough?  Vite 7 needs 20.19+ or 22.12+ ---------------
+rem ---- 2. Node.js new enough?  This project needs 22.12 or newer ------------
 for /f "delims=" %%v in ('node -v') do set "NODEV=%%v"
 for /f "tokens=1,2 delims=v." %%a in ("!NODEV!") do (
   set "MAJOR=%%a"
@@ -27,10 +28,9 @@ for /f "tokens=1,2 delims=v." %%a in ("!NODEV!") do (
 set "OK=0"
 if !MAJOR! GEQ 23 set "OK=1"
 if !MAJOR! EQU 22 if !MINOR! GEQ 12 set "OK=1"
-if !MAJOR! EQU 20 if !MINOR! GEQ 19 set "OK=1"
 if "!OK!"=="0" (
   echo    [x] Node !NODEV! is too old for this project.
-  echo        It needs Node 20.19 or newer, or 22.12 or newer.
+  echo        It needs Node 22.12 or newer.
   echo        Download the LTS version from https://nodejs.org and run this again.
   echo.
   pause
@@ -39,11 +39,16 @@ if "!OK!"=="0" (
 echo    [ok] Node !NODEV!
 
 rem ---- 3. Install packages on first run, and again whenever they change ----
+rem      (or when node_modules came from a different OS / CPU)
+for /f "delims=" %%p in ('node -p "`${process.platform}-${process.arch}`"') do set "PLAT=%%p"
 set "NEED_INSTALL=0"
 if not exist "node_modules\.installed-lock" set "NEED_INSTALL=1"
+if not exist "node_modules\.installed-platform" set "NEED_INSTALL=1"
 if "!NEED_INSTALL!"=="0" (
   fc /b "package-lock.json" "node_modules\.installed-lock" >nul 2>nul
   if errorlevel 1 set "NEED_INSTALL=1"
+  set /p OLDPLAT=<"node_modules\.installed-platform"
+  if not "!OLDPLAT!"=="!PLAT!" set "NEED_INSTALL=1"
 )
 if "!NEED_INSTALL!"=="1" (
   echo    [..] Installing packages - first run takes a minute or two...
@@ -63,6 +68,7 @@ if "!NEED_INSTALL!"=="1" (
     )
   )
   copy /y "package-lock.json" "node_modules\.installed-lock" >nul
+  > "node_modules\.installed-platform" echo !PLAT!
   echo.
 )
 echo    [ok] Packages ready
@@ -76,6 +82,11 @@ call npm run dev -- --open
 if errorlevel 1 (
   echo.
   echo    [x] The dev server stopped with an error - see the messages above.
+  if /i "%PROCESSOR_ARCHITECTURE%"=="ARM64" (
+    echo        On Windows on ARM, "Required DLL was not found" means you need the
+    echo        Microsoft Visual C++ runtime: https://aka.ms/vs/17/release/vc_redist.arm64.exe
+  )
+  echo        If it says EACCES on port 5173, run:  npm run dev -- --port 3000
   echo.
   pause
 )

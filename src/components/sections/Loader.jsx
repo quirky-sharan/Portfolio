@@ -2,7 +2,7 @@ import { useRef, useState } from 'react'
 import { gsap, useGSAP } from '../../lib/gsap'
 import { smooth } from '../../lib/smooth'
 import { scripts } from '../../data/content'
-import Mascot from '../ui/Mascot'
+import Cat from '../ui/Cat'
 
 const SEEN_KEY = 'ss:intro-seen'
 
@@ -202,7 +202,7 @@ export default function Loader({ onReveal, onDone }) {
       </div>
 
       <div className="ld-mascot absolute left-0 top-1/2 will-change-transform">
-        <Mascot pose="push" style={{ width: 'clamp(170px, 29vh, 310px)', display: 'block' }} />
+        <Cat pose="push" style={{ width: 'clamp(170px, 29vh, 310px)', display: 'block' }} />
       </div>
     </div>
   )

@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { gsap, useGSAP } from '../../lib/gsap'
+import { gsap, ScrollTrigger, useGSAP } from '../../lib/gsap'
 import { person, results } from '../../data/content'
 import RollText from '../ui/RollText'
 
@@ -17,12 +17,32 @@ export default function Results() {
   useGSAP(
     () => {
       const q = gsap.utils.selector(root)
-      gsap.from(q('.rs-row'), {
-        clipPath: 'inset(0 100% 0 0)',
-        duration: 1.1,
-        ease: 'quart',
-        stagger: 0.07,
-        scrollTrigger: { trigger: q('.rs-board')[0], start: 'top 78%', once: true },
+      // F1 start: five lights come on as you scroll in… then lights out,
+      // and the classification races onto the board.
+      const lights = q('.rs-light')
+      const status = q('.rs-status')[0]
+      const rows = q('.rs-row')
+      gsap.set(rows, { xPercent: -8, clipPath: 'inset(0 100% 0 0)' })
+      let raced = false
+      const race = () => {
+        lights.forEach((l) => l.classList.remove('is-on'))
+        status.textContent = 'Lights out — and away we go'
+        if (raced) return
+        raced = true
+        gsap.to(rows, { xPercent: 0, clipPath: 'inset(0 0% 0 0)', duration: 0.9, ease: 'expo', stagger: 0.07 })
+      }
+      ScrollTrigger.create({
+        trigger: q('.rs-board')[0],
+        start: 'top 95%',
+        end: 'top 45%',
+        onUpdate: (self) => {
+          if (self.progress >= 0.999) return race()
+          const on = Math.min(5, Math.floor(self.progress * 6))
+          lights.forEach((l, i) => l.classList.toggle('is-on', i < on))
+          status.textContent = on ? `Start sequence ${on}/5` : 'Grid is forming'
+        },
+        onLeave: race,
+        onRefresh: (self) => self.progress >= 0.999 && race(),
       })
       gsap.from(q('.rs-title .rs-c'), {
         yPercent: 110,
@@ -51,7 +71,7 @@ export default function Results() {
             <p className="label text-paper/50">
               <span className="text-paper">(05)</span> Hackathons &amp; recognition
             </p>
-            <h2 className="rs-title display mask mt-4 text-[clamp(84px,15vw,270px)]">
+            <h2 data-skew className="rs-title display mask mt-4 text-[clamp(84px,15vw,270px)]">
               {[...title].map((c, i) => (
                 <span key={i} className="rs-c inline-block">
                   {c}
@@ -59,9 +79,18 @@ export default function Results() {
               ))}
             </h2>
           </div>
-          <div className="label flex items-center gap-2 pb-3 text-paper/60">
-            <span className="size-2 animate-pulse rounded-full bg-signal" />
-            Live classification
+          <div className="flex flex-col items-start gap-3 pb-3 md:items-end">
+            <div className="flex gap-1.5 rounded-[10px] bg-[#1b1b18] p-2 ring-1 ring-paper/10" aria-hidden="true">
+              {[0, 1, 2, 3, 4].map((i) => (
+                <span key={i} className="rs-light grid gap-1.5 rounded-[6px] bg-black/50 p-1.5">
+                  <i className="block size-3.5 rounded-full md:size-4" />
+                  <i className="block size-3.5 rounded-full md:size-4" />
+                </span>
+              ))}
+            </div>
+            <span className="rs-status label text-paper/60" aria-live="polite">
+              Grid is forming
+            </span>
           </div>
         </div>
 

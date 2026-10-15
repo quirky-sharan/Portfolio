@@ -19,19 +19,21 @@ fail() {
 # 1. Node.js present?
 command -v node >/dev/null 2>&1 || fail "Node.js is not installed." "Download the LTS version from https://nodejs.org and run this again."
 
-# 2. Node.js new enough?  Vite 7 needs 20.19+ or 22.12+
+# 2. Node.js new enough?  This project needs 22.12 or newer
 ver="$(node -p 'process.versions.node')"
 major="${ver%%.*}"
 minor="$(echo "$ver" | cut -d. -f2)"
 ok=0
 [ "$major" -ge 23 ] && ok=1
 [ "$major" -eq 22 ] && [ "$minor" -ge 12 ] && ok=1
-[ "$major" -eq 20 ] && [ "$minor" -ge 19 ] && ok=1
-[ "$ok" -eq 1 ] || fail "Node v$ver is too old for this project." "It needs Node 20.19 or newer, or 22.12 or newer — get the LTS from https://nodejs.org"
+[ "$ok" -eq 1 ] || fail "Node v$ver is too old for this project." "It needs Node 22.12 or newer — get the LTS from https://nodejs.org"
 echo "   [ok] Node v$ver"
 
 # 3. Install packages on first run, and again whenever they change
-if [ ! -f node_modules/.installed-lock ] || ! cmp -s package-lock.json node_modules/.installed-lock; then
+#    (or when node_modules came from a different OS / CPU)
+plat="$(node -p "process.platform+'-'+process.arch")"
+if [ ! -f node_modules/.installed-lock ] || ! cmp -s package-lock.json node_modules/.installed-lock \
+  || [ "$(cat node_modules/.installed-platform 2>/dev/null)" != "$plat" ]; then
   echo "   [..] Installing packages - first run takes a minute or two..."
   echo
   if ! npm ci --no-audit --no-fund; then
@@ -40,6 +42,7 @@ if [ ! -f node_modules/.installed-lock ] || ! cmp -s package-lock.json node_modu
     npm install --no-audit --no-fund || fail "Could not install packages." "Check your internet connection and try again."
   fi
   cp package-lock.json node_modules/.installed-lock
+  echo "$plat" > node_modules/.installed-platform
   echo
 fi
 echo "   [ok] Packages ready"

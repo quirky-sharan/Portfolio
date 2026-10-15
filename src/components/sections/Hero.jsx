@@ -117,7 +117,7 @@ function HeroName({ interactive }) {
             ch === ' ' ? (
               <span key={i} className="w-[0.16em] shrink-0" />
             ) : (
-              <span key={i} className="hn-mask mask inline-block shrink-0 pb-[0.02em]">
+              <span key={i} className="hn-mask inline-block shrink-0 pb-[0.02em]">
                 <span className="hn-l inline-flex justify-center">{ch}</span>
               </span>
             ),
@@ -230,7 +230,7 @@ export default function Hero({ play }) {
               </span>
               Scroll
             </span>
-            <span className="font-ja hidden text-[13px] tracking-[0.3em] text-ink md:block">シャラン・ソニ</span>
+            <span className="hidden tabular-nums md:block">12.92°N · 79.13°E</span>
             <span>{person.location.split(',')[0]} — IN</span>
           </div>
           <HeroName interactive={play && fine} />
