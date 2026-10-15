@@ -7,6 +7,7 @@ import { person, projects, sideQuests } from '../../data/content'
 import ProjectCard from './ProjectCard'
 import Switch from '../ui/Switch'
 import RollText from '../ui/RollText'
+import SplitReveal from '../ui/SplitReveal'
 
 const N = projects.length
 const ROWS = 5
@@ -171,7 +172,7 @@ function WorkPinned() {
       <div className="grid min-h-0 flex-1 grid-cols-12 gap-6 pt-6">
         {/* left: index + minimal info */}
         <div className="wk-in col-span-4 flex min-h-0 flex-col">
-          <div className="display flex items-start text-[clamp(110px,13.5vw,250px)]">
+          <div data-skew className="display flex items-start text-[clamp(110px,13.5vw,250px)]">
             <Digit d={0} />
             <Digit d={shown + 1} />
             <span className="label ml-3 mt-3 text-smoke">/ 0{N}</span>
@@ -360,10 +361,10 @@ function SideQuests() {
   return (
     <div ref={root} className="pad-x pb-[14vh] pt-[10vh]">
       <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
-        <h3 className="serif text-[clamp(40px,5vw,84px)] leading-[0.9]">
+        <SplitReveal as="h3" className="serif text-[clamp(40px,5vw,84px)] leading-[0.9]">
           Side <span className="italic">quests</span>
           <span className="text-signal">.</span>
-        </h3>
+        </SplitReveal>
         <a
           href={person.github}
           target="_blank"
@@ -375,7 +376,7 @@ function SideQuests() {
           <span className="transition-transform duration-500 group-hover:rotate-45">↗</span>
         </a>
       </div>
-      <ul>
+      <ul data-skew>
         {sideQuests.map((q, i) => (
           <li key={q.title} className="sq-row">
             <a

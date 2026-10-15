@@ -1,29 +1,32 @@
 import { useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { gsap, ScrollTrigger, useGSAP } from '../../lib/gsap'
-import { parseEmphasis, tokenize } from '../../lib/tokenize'
+import { parseEmphasis, tokenize, TOKEN_COLORS } from '../../lib/tokenize'
 import { languages, manifesto, stats } from '../../data/content'
 import Switch from '../ui/Switch'
 import RollNumber from '../ui/RollNumber'
+import SplitReveal from '../ui/SplitReveal'
 
 const segments = parseEmphasis(manifesto)
 
 function HumanText() {
+  let n = 0
   return (
     <p className="mf-human">
       {segments.map((seg, si) =>
-        seg.text.split(/(\s+)/).map((w, wi) =>
-          /^\s+$/.test(w) || !w ? (
-            w
-          ) : (
+        seg.text.split(/(\s+)/).map((w, wi) => {
+          if (/^\s+$/.test(w) || !w) return w
+          const i = n++
+          return (
             <span
               key={`${si}-${wi}`}
               className={`mf-w inline-block ${seg.em ? 'serif italic text-[1.08em] leading-none' : ''}`}
+              style={{ '--tc': TOKEN_COLORS[i % TOKEN_COLORS.length] }}
             >
               {w}
             </span>
-          ),
-        ),
+          )
+        }),
       )}
     </p>
   )
@@ -72,7 +75,13 @@ export default function About() {
           .to(hero.querySelector('.hero-shade'), { opacity: 0.55, ease: 'none' }, 0)
           .to(
             hero.querySelectorAll('.hn-l'),
-            { yPercent: (i) => 22 + (i % 3) * 14, ease: 'none', stagger: { each: 0.02 } },
+            {
+              yPercent: (i) => 55 + (i % 3) * 22,
+              rotation: (i) => (i % 2 ? 1 : -1) * (9 + ((i * 7) % 13)),
+              transformOrigin: '50% 100%',
+              ease: 'power2.in',
+              stagger: { each: 0.035, from: 'random' },
+            },
             0,
           )
         gsap.fromTo(
@@ -87,17 +96,33 @@ export default function About() {
         )
       }
 
-      // Words light up as you read.
-      gsap.fromTo(
-        q('.mf-w'),
-        { opacity: 0.14 },
-        {
-          opacity: 1,
-          ease: 'none',
-          stagger: 0.12,
-          scrollTrigger: { trigger: q('.mf-stack')[0], start: 'top 82%', end: 'bottom 55%', scrub: 0.6 },
+      // Words stream in like a model generating them: each one flashes as a
+      // coloured token, then settles into the paragraph.
+      const words = q('.mf-w')
+      const state = words.map(() => '')
+      let target = 0
+      let head = 0
+      ScrollTrigger.create({
+        trigger: q('.mf-stack')[0],
+        start: 'top 72%',
+        end: 'bottom 32%',
+        onUpdate: (self) => {
+          target = self.progress * (words.length + 3)
         },
-      )
+      })
+      const stream = () => {
+        if (Math.abs(target - head) < 0.01) return
+        head += (target - head) * 0.16
+        const c = Math.floor(head)
+        words.forEach((w, i) => {
+          const s = i < c - 3 ? 'lit' : i < c ? 'hot' : i === c ? 'head' : ''
+          if (s !== state[i]) {
+            state[i] = s
+            w.dataset.s = s
+          }
+        })
+      }
+      gsap.ticker.add(stream)
 
       gsap.from(q('.ab-rule'), {
         scaleX: 0,
@@ -120,6 +145,7 @@ export default function About() {
         stagger: 0.08,
         scrollTrigger: { trigger: q('.ab-langs')[0], start: 'top 85%', once: true },
       })
+      return () => gsap.ticker.remove(stream)
     },
     { scope: root },
   )
@@ -171,7 +197,7 @@ export default function About() {
         <AnimatePresence>{tokens && <TokenText key="tokens" tokens={tokenList} />}</AnimatePresence>
       </div>
 
-      <div className="ab-stats mt-[14vh] grid grid-cols-2 gap-x-4 gap-y-12 md:grid-cols-4 md:gap-x-6">
+      <div data-skew className="ab-stats mt-[14vh] grid grid-cols-2 gap-x-4 gap-y-12 md:grid-cols-4 md:gap-x-6">
         {stats.map((s, i) => (
           <div key={s.label} className="relative pt-5">
             <span className="ab-rule absolute inset-x-0 top-0 h-px origin-left bg-paper/20" />
@@ -189,9 +215,9 @@ export default function About() {
       <div className="ab-langs mt-[16vh] grid gap-10 md:grid-cols-12 md:gap-6">
         <div className="md:col-span-4">
           <p className="label text-paper/50">Languages</p>
-          <p className="serif mt-4 max-w-[14ch] text-[clamp(36px,3.6vw,60px)] leading-[0.95]">
+          <SplitReveal as="p" className="serif mt-4 max-w-[14ch] text-[clamp(36px,3.6vw,60px)] leading-[0.95]">
             Four languages. Four scripts<span className="text-signal">.</span>
-          </p>
+          </SplitReveal>
         </div>
         <div className="grid grid-cols-2 gap-x-4 gap-y-10 md:col-span-8 md:grid-cols-4 md:gap-x-6">
           {languages.map((l) => (

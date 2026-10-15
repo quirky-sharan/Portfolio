@@ -6,9 +6,9 @@ import { hellos, person } from '../../data/content'
 import ErrorBoundary, { hasWebGL } from '../ui/ErrorBoundary'
 import Magnetic from '../ui/Magnetic'
 import RollText from '../ui/RollText'
-import Hanko from '../ui/Hanko'
+import Logo from '../ui/Logo'
 
-const HankoScene = lazy(() => import('../three/HankoScene'))
+const LanyardScene = lazy(() => import('../three/LanyardScene'))
 
 /* “Let's talk” cycling through every language Sharan speaks. */
 function Hello() {
@@ -100,25 +100,34 @@ function Action({ href, children, external, cursor }) {
   )
 }
 
+/* Flat stand-in when WebGL is unavailable: the same badge, hanging still. */
+function StaticBadge() {
+  return (
+    <div className="absolute left-1/2 top-0 flex -translate-x-1/2 flex-col items-center">
+      <span className="block h-[22vh] w-6 bg-signal" />
+      <div className="w-[min(280px,70vw)] rounded-[14px] border border-ink/15 bg-[#f1efe9] p-5 shadow-[0_30px_60px_-30px_rgba(0,0,0,0.4)]">
+        <Logo size={44} />
+        <p className="display mt-6 text-[64px] leading-[0.85]">
+          {person.first}
+          <br />
+          {person.last}
+        </p>
+        <p className="label mt-4">{person.role}</p>
+        <p className="label mt-4 text-smoke">{person.email}</p>
+        <p className="label text-smoke">{person.phone}</p>
+      </div>
+    </div>
+  )
+}
+
 export default function Contact() {
   const root = useRef(null)
   const [sceneRef, near, visible] = useNearViewport('80% 0px')
   const isDesktop = useIsDesktop()
   const time = useClock(person.timezone)
-  const stampRef = useRef(null)
-  const [stamps, setStamps] = useState(0)
+  const [dragging, setDragging] = useState(false)
+  const [hovering, setHovering] = useState(false)
   const [webgl] = useState(() => hasWebGL())
-  const [fontReady, setFontReady] = useState(false)
-
-  useEffect(() => {
-    let alive = true
-    const done = () => alive && setFontReady(true)
-    if (document.fonts?.load) document.fonts.load('700 64px "Sharan Japanese"', 'シャラン').then(done, done)
-    else done()
-    return () => {
-      alive = false
-    }
-  }, [])
 
   useGSAP(
     () => {
@@ -135,8 +144,40 @@ export default function Contact() {
   )
 
   return (
-    <section id="contact" ref={root} data-theme="light" className="relative overflow-hidden bg-paper pb-10 pt-[14vh]">
-      <div className="grid gap-y-10 pad-x lg:grid-cols-12 lg:gap-x-6">
+    <section
+      id="contact"
+      ref={root}
+      data-theme="light"
+      className="relative flex flex-col overflow-hidden bg-paper pb-12 lg:block lg:min-h-[100svh]"
+    >
+      {/* the badge hangs from the top of the section */}
+      <div
+        ref={sceneRef}
+        className="relative order-last h-[64svh] min-h-[440px] lg:absolute lg:inset-0 lg:h-full"
+        data-cursor={dragging ? 'Fling' : hovering && isDesktop ? 'Grab' : undefined}
+      >
+        {near &&
+          (webgl ? (
+            <ErrorBoundary fallback={<StaticBadge />}>
+              <Suspense fallback={null}>
+                <LanyardScene
+                  visible={visible}
+                  compact={!isDesktop}
+                  anchorX={isDesktop ? 0.5 : 0}
+                  onDragChange={setDragging}
+                  onHoverChange={setHovering}
+                />
+              </Suspense>
+            </ErrorBoundary>
+          ) : (
+            <StaticBadge />
+          ))}
+        <p className="label pointer-events-none absolute bottom-4 right-[var(--pad)] text-smoke">
+          {isDesktop ? 'Grab the card — fling it' : 'Tap the card'}
+        </p>
+      </div>
+
+      <div className="pointer-events-none relative z-10 grid gap-y-10 pad-x pt-[14vh] lg:grid-cols-12 lg:gap-x-6 [&_a]:pointer-events-auto [&_button]:pointer-events-auto">
         <div className="lg:col-span-7">
           <p className="ct-in label">
             (07) <span className="text-smoke">Contact</span>
@@ -177,74 +218,34 @@ export default function Contact() {
               </Action>
             </div>
           </div>
-        </div>
 
-        <div className="relative flex flex-col lg:col-span-5">
-          <div className="ct-in grid grid-cols-2 gap-4 border-t border-ink/15 pt-5 lg:mt-[7.5rem]">
+          <div className="ct-in mt-14 grid max-w-[560px] grid-cols-2 gap-4 border-t border-ink/15 pt-5">
             <div>
               <p className="label text-smoke">Elsewhere</p>
               <ul className="mt-3 grid gap-2 text-[17px]">
-                <li>
-                  <a
-                    href={person.linkedin}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="group inline-flex items-center gap-2"
-                    data-cursor="Open"
-                  >
-                    <RollText>LinkedIn</RollText>
-                    <span className="transition-transform duration-500 group-hover:rotate-45">↗</span>
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href={person.github}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="group inline-flex items-center gap-2"
-                    data-cursor="Open"
-                  >
-                    <RollText>GitHub</RollText>
-                    <span className="transition-transform duration-500 group-hover:rotate-45">↗</span>
-                  </a>
-                </li>
+                {[
+                  ['LinkedIn', person.linkedin],
+                  ['GitHub', person.github],
+                ].map(([label, href]) => (
+                  <li key={label}>
+                    <a
+                      href={href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="group inline-flex items-center gap-2"
+                      data-cursor="Open"
+                    >
+                      <RollText>{label}</RollText>
+                      <span className="transition-transform duration-500 group-hover:rotate-45">↗</span>
+                    </a>
+                  </li>
+                ))}
               </ul>
             </div>
             <div>
               <p className="label text-smoke">Local time</p>
               <p className="mt-3 text-[17px] tabular-nums">{time} IST</p>
               <p className="label mt-1 text-smoke">{person.location}</p>
-            </div>
-          </div>
-
-          <div
-            ref={sceneRef}
-            className="ct-in relative mt-8 h-[52svh] min-h-[340px] lg:h-auto lg:flex-1"
-            data-cursor="Stamp"
-          >
-            {near && webgl && fontReady && (
-              <ErrorBoundary fallback={<Hanko size={180} className="absolute left-1/2 top-1/2 -translate-1/2" />}>
-                <Suspense fallback={null}>
-                  <HankoScene visible={visible} compact={!isDesktop} stampRef={stampRef} onStamp={setStamps} />
-                </Suspense>
-              </ErrorBoundary>
-            )}
-            {!webgl && <Hanko size={180} className="absolute left-1/2 top-1/2 -translate-1/2" />}
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between">
-              <span className="label text-smoke">
-                {stamps
-                  ? `${stamps} stamp${stamps > 1 ? 's' : ''} — hanko approved`
-                  : isDesktop
-                    ? 'Click the seal to stamp'
-                    : 'Tap the seal to stamp'}
-              </span>
-              <button
-                type="button"
-                className="label pointer-events-auto rounded-full border border-ink/20 px-3 py-1.5 hover:bg-ink hover:text-paper"
-                onClick={() => stampRef.current?.()}
-              >
-                Stamp ↓
-              </button>
             </div>
           </div>
         </div>

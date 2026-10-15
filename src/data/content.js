@@ -40,7 +40,6 @@ export const hellos = [
   { text: "Let's talk", className: 'font-display' },
   { text: 'नमस्ते', className: 'font-hi' },
   { text: 'કેમ છો', className: 'font-gu' },
-  { text: 'こんにちは', className: 'font-ja' },
 ]
 
 export const hero = {

@@ -4,7 +4,7 @@ import { ScrollTrigger } from '../../lib/gsap'
 import { smooth, scrollToTarget } from '../../lib/smooth'
 import { useClock } from '../../lib/hooks'
 import { nav, person } from '../../data/content'
-import Hanko from '../ui/Hanko'
+import Logo from '../ui/Logo'
 import RollText from '../ui/RollText'
 import Magnetic from '../ui/Magnetic'
 
@@ -69,7 +69,7 @@ export default function Header({ visible }) {
       >
         <div className="flex h-full items-center justify-between gap-6">
           <a href="#top" onClick={(e) => go(e, 0)} className="flex items-center gap-3" data-cursor="Top">
-            <Hanko size={34} />
+            <Logo size={34} />
             <span className="label leading-tight">
               <RollText>Sharan Soni</RollText>
               <span className="block opacity-50">AI/ML × Frontend</span>

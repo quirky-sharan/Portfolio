@@ -5,6 +5,7 @@ import { toolbox } from '../../data/content'
 import ErrorBoundary, { hasWebGL } from '../ui/ErrorBoundary'
 import Magnetic from '../ui/Magnetic'
 import RollText from '../ui/RollText'
+import SplitReveal from '../ui/SplitReveal'
 
 const ToolboxScene = lazy(() => import('../three/ToolboxScene'))
 
@@ -53,7 +54,10 @@ export default function Toolbox() {
       className="relative h-[100svh] min-h-[600px] overflow-hidden bg-paper-2"
       data-cursor-zone="drag"
     >
-      <h2 className="display pointer-events-none absolute inset-x-0 top-[30%] select-none text-center text-[23vw] leading-[0.8] text-ink/[0.055]">
+      <h2
+        data-skew
+        className="display pointer-events-none absolute inset-x-0 top-[30%] select-none text-center text-[23vw] leading-[0.8] text-ink/[0.055]"
+      >
         Toolbox
       </h2>
 
@@ -62,9 +66,9 @@ export default function Toolbox() {
           <p className="label">
             (04) <span className="text-smoke">Toolbox</span>
           </p>
-          <p className="serif mt-5 max-w-[15ch] text-[clamp(38px,4.4vw,76px)] leading-[0.92]">
+          <SplitReveal as="p" className="serif mt-5 max-w-[15ch] text-[clamp(38px,4.4vw,76px)] leading-[0.92]">
             Everything I reach for. <span className="italic text-ink/55">Go on — throw them.</span>
-          </p>
+          </SplitReveal>
         </div>
         <div className="tb-in flex flex-col items-start gap-5 md:col-span-4 md:col-start-9 md:items-end">
           <ul className="flex flex-wrap gap-x-4 gap-y-2 md:justify-end">

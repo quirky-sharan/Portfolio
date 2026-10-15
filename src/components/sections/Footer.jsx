@@ -3,8 +3,9 @@ import { gsap, useGSAP } from '../../lib/gsap'
 import { scrollToTarget } from '../../lib/smooth'
 import { nav, person } from '../../data/content'
 import { useFitText } from '../../lib/hooks'
-import Mascot from '../ui/Mascot'
+import Cat from '../ui/Cat'
 import RollText from '../ui/RollText'
+import SplitReveal from '../ui/SplitReveal'
 
 export default function Footer() {
   const root = useRef(null)
@@ -14,13 +15,13 @@ export default function Footer() {
     () => {
       const q = gsap.utils.selector(root)
       gsap.from(q('.ft-l'), {
-        yPercent: 100,
-        duration: 1.3,
-        stagger: 0.035,
-        ease: 'expo',
+        yPercent: 105,
+        duration: 1.1,
+        stagger: { each: 0.05, from: 'center' },
+        ease: 'back.out(1.7)',
         scrollTrigger: { trigger: q('.ft-name')[0], start: 'top 95%', once: true },
       })
-      gsap.from(q('.ft-mascot'), {
+      gsap.from(q('.ft-cat'), {
         yPercent: 100,
         duration: 1.2,
         delay: 0.5,
@@ -40,9 +41,9 @@ export default function Footer() {
     <footer ref={root} data-theme="dark" className="relative overflow-hidden bg-ink pt-[12vh] text-paper">
       <div className="grid gap-10 pad-x sm:grid-cols-2 lg:grid-cols-12">
         <div className="lg:col-span-4">
-          <p className="serif max-w-[18ch] text-[clamp(30px,2.6vw,44px)] leading-[1.02]">
+          <SplitReveal as="p" className="serif max-w-[18ch] text-[clamp(30px,2.6vw,44px)] leading-[1.02]">
             Built with care, curiosity and <span className="italic">far too many</span> easing curves.
-          </p>
+          </SplitReveal>
         </div>
         <nav className="lg:col-span-2 lg:col-start-7" aria-label="Footer">
           <p className="label text-paper/40">Index</p>
@@ -94,10 +95,10 @@ export default function Footer() {
       </div>
 
       <div className="relative mt-[12vh] pad-x">
-        <div className="ft-mascot pointer-events-none absolute bottom-[86%] right-[6%] w-[clamp(90px,11vw,170px)]">
-          <Mascot pose="wave" walking={false} line="#eeece6" />
+        <div className="ft-cat pointer-events-none absolute bottom-[86%] right-[6%] w-[clamp(90px,11vw,170px)]">
+          <Cat pose="wave" walking={false} line="#eeece6" />
         </div>
-        <p ref={name} className="ft-name display mask flex leading-[0.8]" aria-hidden="true">
+        <p ref={name} data-skew className="ft-name display mask flex leading-[0.8]" aria-hidden="true">
           {[...'SHARAN SONI'].map((c, i) =>
             c === ' ' ? (
               <span key={i} className="w-[0.16em] shrink-0" />
