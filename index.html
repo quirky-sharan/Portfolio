@@ -2,12 +2,81 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>portfolio</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Sharan Soni — AI/ML Engineer & Frontend Developer</title>
+    <meta
+      name="description"
+      content="Sharan Soni — AI/ML engineer and frontend developer at VIT Vellore. Hackathon winner and patent applicant building RAG-powered products and interfaces that feel alive."
+    />
+    <meta name="author" content="Sharan Soni" />
+    <meta name="theme-color" content="#0e0e0c" />
+    <meta name="color-scheme" content="light" />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <!-- Social cards. Set VITE_SITE_URL (see .env.example) so these become absolute URLs. -->
+    <link rel="canonical" href="__SITE_URL__/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="__SITE_URL__/" />
+    <meta property="og:title" content="Sharan Soni — Half model. Half motion." />
+    <meta
+      property="og:description"
+      content="AI/ML engineer & frontend developer building RAG-powered products — and the interfaces that make them feel alive."
+    />
+    <meta property="og:image" content="__SITE_URL__/og.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Sharan Soni — Half model. Half motion." />
+    <meta name="twitter:image" content="__SITE_URL__/og.jpg" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Sharan Soni",
+        "jobTitle": "AI/ML Engineer & Frontend Developer",
+        "email": "mailto:imsharansoni@gmail.com",
+        "telephone": "+91 79905 88077",
+        "address": { "@type": "PostalAddress", "addressLocality": "Vellore", "addressRegion": "Tamil Nadu", "addressCountry": "IN" },
+        "alumniOf": "Vellore Institute of Technology",
+        "sameAs": ["https://www.linkedin.com/in/sharan-soni-/", "https://github.com/quirky-sharan"]
+      }
+    </script>
+
+    <style>
+      html,
+      body {
+        background: #0e0e0c;
+        margin: 0;
+      }
+      #boot {
+        position: fixed;
+        inset: 0;
+        background: #0e0e0c;
+        z-index: 200;
+      }
+    </style>
   </head>
   <body>
+    <div id="boot"></div>
     <div id="root"></div>
+    <noscript>
+      <div style="position: fixed; inset: 0; z-index: 300; background: #eeece6; color: #0e0e0c; padding: 32px; font-family: system-ui">
+        <h1>Sharan Soni</h1>
+        <p>AI/ML Engineer &amp; Frontend Developer — VIT Vellore.</p>
+        <p>
+          <a href="mailto:imsharansoni@gmail.com">imsharansoni@gmail.com</a> ·
+          <a href="tel:+917990588077">+91 79905 88077</a> ·
+          <a href="https://www.linkedin.com/in/sharan-soni-/">LinkedIn</a> ·
+          <a href="https://github.com/quirky-sharan">GitHub</a>
+        </p>
+        <p>This site is interactive — please enable JavaScript for the full experience.</p>
+      </div>
+    </noscript>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
