@@ -2,9 +2,15 @@
   "name": "sharan-soni-portfolio",
   "private": true,
   "version": "1.0.0",
+  "description": "Portfolio of Sharan Soni \u2014 AI/ML engineer & frontend developer. Half model. Half motion.",
   "type": "module",
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
   "scripts": {
     "dev": "vite",
+    "start": "vite --open",
+    "dev:phone": "vite --host",
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint .",
@@ -40,9 +46,5 @@
     "globals": "^16.5.0",
     "prettier": "^3.9.10",
     "vite": "^7.2.4"
-  },
-  "description": "Portfolio of Sharan Soni — AI/ML engineer & frontend developer. Half model. Half motion.",
-  "engines": {
-    "node": ">=20"
   }
 }

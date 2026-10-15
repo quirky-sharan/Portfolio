@@ -40,18 +40,47 @@ Built with **React 19 · Vite · Tailwind v4 · GSAP (ScrollTrigger, SplitText) 
 
 ---
 
-## Run it
+## Run it on your computer
+
+You need **Node.js 20.19+ or 22.12+** (the LTS from [nodejs.org](https://nodejs.org) is perfect). Check with `node -v`.
+
+### The easy way — double-click
+
+| Windows | macOS | Linux |
+| --- | --- | --- |
+| Double-click **`start.bat`** | Double-click **`start.command`** | `bash start.command` |
+
+It checks your Node version, installs packages the first time (and again whenever they change), starts the site and opens your browser. Keep the window open while you use it; **Ctrl + C** stops it.
+
+> macOS may say the file is from an unidentified developer the first time — right-click → **Open** → **Open**.
+
+### The terminal way
 
 ```bash
+git clone https://github.com/quirky-sharan/Portfolio.git
+cd Portfolio
+git checkout claude/clever-ptolemy-g46bgo   # until it's merged into main
 npm install
-npm run dev        # http://localhost:5173
-npm run build      # production build → dist/
-npm run preview    # serve the build locally
-npm run lint
-npm run format
+npm run dev          # → http://localhost:5173
 ```
 
-Node 20+.
+| Command | What it does |
+| --- | --- |
+| `npm run dev` | Dev server with hot reload — http://localhost:5173 |
+| `npm start` | Same, and opens the browser for you |
+| `npm run dev:phone` | Also serves on your Wi-Fi — open the **Network** URL it prints on your phone (same Wi-Fi) |
+| `npm run build` | Production build into `dist/` |
+| `npm run preview` | Serves the production build — http://localhost:4173 |
+| `npm run lint` / `npm run format` | ESLint / Prettier |
+
+### If something goes wrong
+
+- **`npm` is "not recognized"** — Node isn't installed, or the terminal was open before you installed it. Install the LTS and open a new terminal.
+- **PowerShell: "running scripts is disabled on this system"** — use **Command Prompt** or `start.bat` instead, or run once: `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`.
+- **"Vite requires Node.js version 20.19+ or 22.12+"** — update Node from nodejs.org (Node 21 and 22.0–22.11 are too old for Vite 7).
+- **Port 5173 already in use** — Vite picks the next free port; use the URL it prints.
+- **Weird install errors after switching branches** — delete `node_modules` and run `npm install` again.
+- **3D sections look blank** — your browser has WebGL/hardware acceleration turned off; the rest of the site still works and the 3D falls back gracefully.
 
 ---
 
