@@ -16,6 +16,9 @@ fail() {
   exit 1
 }
 
+# 0. Opened on its own, without the rest of the project?
+[ -f package.json ] || fail "This file was opened on its own, without the rest of the project." "Unzip the whole download first, then run start.command from inside the extracted folder."
+
 # 1. Node.js present?
 command -v node >/dev/null 2>&1 || fail "Node.js is not installed." "Download the LTS version from https://nodejs.org and run this again."
 
@@ -36,6 +39,8 @@ if [ ! -f node_modules/.installed-lock ] || ! cmp -s package-lock.json node_modu
   || [ "$(cat node_modules/.installed-platform 2>/dev/null)" != "$plat" ]; then
   echo "   [..] Installing packages - first run takes a minute or two..."
   echo
+  # forget the old install first, so a cancelled install is redone next time
+  rm -f node_modules/.installed-lock node_modules/.installed-platform
   if ! npm ci --no-audit --no-fund; then
     echo
     echo "   [..] Clean install failed - trying a regular install instead..."

@@ -5,7 +5,7 @@
 import { useId } from 'react'
 import { LOGO_CELL, LOGO_CELL_R, LOGO_CELLS, LOGO_CURVE, LOGO_SPLIT } from './logoData'
 
-export default function Logo({ size = 34, boxed = true, className = '', title = 'Sharan Soni' }) {
+export default function Logo({ size = 34, boxed = true, className = '', title = 'Sharan Soni', decorative = false }) {
   const clip = useId()
   return (
     <svg
@@ -13,8 +13,7 @@ export default function Logo({ size = 34, boxed = true, className = '', title = 
       width={size}
       height={size}
       className={`logo shrink-0 ${className}`}
-      role="img"
-      aria-label={title}
+      {...(decorative ? { 'aria-hidden': true, focusable: 'false' } : { role: 'img', 'aria-label': title })}
     >
       {boxed && <rect width="64" height="64" rx="15" fill="#0e0e0c" />}
       <defs>

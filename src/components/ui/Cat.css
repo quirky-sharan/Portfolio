@@ -23,6 +23,15 @@
   transform-origin: center;
   animation: cat-glint 3.2s ease-in-out infinite;
 }
+/* light band across the lenses, parked off-lens at rest; same beat as the glint */
+.cat__sweep {
+  --sweep: 26px;
+  transform: translateX(calc(var(--sweep) * -1));
+  animation: cat-sweep 3.2s ease-in-out infinite;
+}
+.cat--wave .cat__sweep {
+  --sweep: 50px;
+}
 
 /* ---------- push (loader) ---------- */
 .cat--push.is-walking .cat__leg {
@@ -48,8 +57,17 @@
 .cat--push.is-walking .cat__head {
   animation: cat-strain 0.3s ease-in-out infinite alternate;
 }
-.cat--push.is-walking .cat__effort {
-  animation: cat-effort 0.3s steps(2) infinite;
+.cat--push.is-walking .cat__speed {
+  animation: cat-speed 0.6s ease-out infinite;
+}
+.cat--push.is-walking .cat__speed:nth-child(2) {
+  animation-delay: -0.2s;
+}
+.cat--push.is-walking .cat__speed:nth-child(3) {
+  animation-delay: -0.4s;
+}
+.cat--push.is-walking .cat__ticks {
+  animation: cat-ticks 0.3s ease-in-out infinite alternate;
 }
 .cat--push .cat__sweat {
   transform-origin: 146px 40px;
@@ -58,19 +76,26 @@
 .cat--push.is-walking .cat__sweat {
   animation: cat-sweat 1.2s ease-out infinite;
 }
-.cat--push .cat__dust circle {
+/* one puff per toe-off (near foot at 0s, far foot at 0.3s) plus a trailing wisp */
+.cat--push .cat__dust path {
   transform-box: fill-box;
-  transform-origin: center;
+  transform-origin: 70% 80%;
   opacity: 0;
 }
-.cat--push.is-walking .cat__dust circle {
+.cat--push.is-walking .cat__dust path {
   animation: cat-dust 0.6s ease-out infinite;
 }
-.cat--push.is-walking .cat__dust circle:nth-child(2) {
-  animation-delay: -0.2s;
+.cat--push.is-walking .cat__dust path:nth-child(2) {
+  animation-delay: -0.3s;
 }
-.cat--push.is-walking .cat__dust circle:nth-child(3) {
-  animation-delay: -0.4s;
+.cat--push.is-walking .cat__dust path:nth-child(3) {
+  animation-delay: -0.52s;
+}
+/* standing still: no effort marks */
+.cat--push.is-idle .cat__effort,
+.cat--push.is-idle .cat__dust,
+.cat--push.is-idle .cat__sweat {
+  opacity: 0;
 }
 
 /* ---------- walk (scroll-progress walker) ---------- */
@@ -154,25 +179,25 @@
     transform: rotate(53.2deg);
   }
   5% {
-    transform: rotate(38.7deg);
+    transform: rotate(40deg);
   }
   10% {
-    transform: rotate(24.7deg);
+    transform: rotate(21.1deg);
   }
   15% {
-    transform: rotate(5.7deg);
+    transform: rotate(-2.1deg);
   }
   20% {
-    transform: rotate(-24.4deg);
+    transform: rotate(-27.8deg);
   }
   25% {
-    transform: rotate(-66.2deg);
+    transform: rotate(-51.1deg);
   }
   30% {
-    transform: rotate(-83.6deg);
+    transform: rotate(-65.2deg);
   }
   35% {
-    transform: rotate(-77.5deg);
+    transform: rotate(-69.8deg);
   }
   40% {
     transform: rotate(-66.8deg);
@@ -219,25 +244,25 @@
     transform: rotate(14.9deg);
   }
   5% {
-    transform: rotate(53deg);
+    transform: rotate(39.7deg);
   }
   10% {
-    transform: rotate(84.2deg);
+    transform: rotate(64.8deg);
   }
   15% {
-    transform: rotate(113.1deg);
+    transform: rotate(88.2deg);
   }
   20% {
-    transform: rotate(136.7deg);
+    transform: rotate(104.5deg);
   }
   25% {
-    transform: rotate(144.4deg);
+    transform: rotate(110deg);
   }
   30% {
-    transform: rotate(130.9deg);
+    transform: rotate(106.3deg);
   }
   35% {
-    transform: rotate(110.1deg);
+    transform: rotate(100.1deg);
   }
   40% {
     transform: rotate(97.9deg);
@@ -284,25 +309,25 @@
     transform: rotate(-38.1deg);
   }
   5% {
-    transform: rotate(-59.2deg);
+    transform: rotate(-57.7deg);
   }
   10% {
-    transform: rotate(-77.3deg);
+    transform: rotate(-73.5deg);
   }
   15% {
-    transform: rotate(-91.5deg);
+    transform: rotate(-83.4deg);
   }
   20% {
-    transform: rotate(-91.9deg);
+    transform: rotate(-82.2deg);
   }
   25% {
-    transform: rotate(-66deg);
+    transform: rotate(-69.6deg);
   }
   30% {
-    transform: rotate(-43.3deg);
+    transform: rotate(-53.2deg);
   }
   35% {
-    transform: rotate(-35.5deg);
+    transform: rotate(-39.7deg);
   }
   40% {
     transform: rotate(-35.1deg);
@@ -683,12 +708,35 @@
     transform: rotate(2deg);
   }
 }
-@keyframes cat-effort {
+@keyframes cat-sweep {
+  0%,
+  52% {
+    transform: translateX(calc(var(--sweep) * -1));
+  }
+  72%,
+  100% {
+    transform: translateX(var(--sweep));
+  }
+}
+@keyframes cat-speed {
   0% {
+    transform: translateX(8px);
+    opacity: 0;
+  }
+  20% {
     opacity: 1;
   }
   100% {
-    opacity: 0.3;
+    transform: translateX(-12px);
+    opacity: 0;
+  }
+}
+@keyframes cat-ticks {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.25;
   }
 }
 @keyframes cat-sweat {
@@ -706,14 +754,14 @@
 }
 @keyframes cat-dust {
   0% {
-    transform: scale(0.2) translate(0, 0);
+    transform: translate(8px, 2px) scale(0.3);
     opacity: 0;
   }
-  30% {
+  18% {
     opacity: 1;
   }
   100% {
-    transform: scale(1.2) translate(-12px, -6px);
+    transform: translate(-26px, -6px) scale(1.15);
     opacity: 0;
   }
 }
@@ -779,9 +827,11 @@
   }
 }
 
+/* reduced motion: drop every animation; the static rest transforms above
+   (planted push stance, walk stance, wave stance, parked glint) take over */
 @media (prefers-reduced-motion: reduce) {
   .cat,
   .cat * {
-    animation-play-state: paused !important;
+    animation: none !important;
   }
 }

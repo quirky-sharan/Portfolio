@@ -42,6 +42,13 @@ export const hellos = [
   { text: 'કેમ છો', className: 'font-gu' },
 ]
 
+/* Contact section copy. Wrap words in *asterisks* for the italic serif. */
+export const contact = {
+  lead: 'Internships, hackathon teams, a frontend that needs to *feel* something — say hi.',
+  collabTag: 'Open to collabs',
+  collab: 'I’d love to collab with people too — always open to discussing and working on *innovative ideas*.',
+}
+
 export const hero = {
   kicker: 'Portfolio ©2026',
   statement: ['Half', 'model.', 'Half', 'motion.'],

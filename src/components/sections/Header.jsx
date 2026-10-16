@@ -52,9 +52,12 @@ export default function Header({ visible }) {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
+  // the open menu locks the page; only undo our own lock (on mount the
+  // intro holds the page locked and releases it itself)
   useEffect(() => {
-    if (open) smooth.lenis?.stop()
-    else smooth.lenis?.start()
+    if (!open) return
+    smooth.lenis?.stop()
+    return () => smooth.lenis?.start()
   }, [open])
 
   const tone = dark || open ? 'text-paper' : 'text-ink'
@@ -69,7 +72,7 @@ export default function Header({ visible }) {
       >
         <div className="flex h-full items-center justify-between gap-6">
           <a href="#top" onClick={(e) => go(e, 0)} className="flex items-center gap-3" data-cursor="Top">
-            <Logo size={34} />
+            <Logo size={34} decorative />
             <span className="label leading-tight">
               <RollText>Sharan Soni</RollText>
               <span className="block opacity-50">AI/ML × Frontend</span>

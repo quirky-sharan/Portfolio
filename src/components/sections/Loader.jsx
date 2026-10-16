@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { gsap, useGSAP } from '../../lib/gsap'
-import { smooth } from '../../lib/smooth'
+import { smooth, startSmoothScroll } from '../../lib/smooth'
 import { scripts } from '../../data/content'
 import Cat from '../ui/Cat'
 
@@ -40,7 +40,9 @@ export default function Loader({ onReveal, onDone }) {
 
       if ('scrollRestoration' in history) history.scrollRestoration = 'manual'
       window.scrollTo(0, 0)
-      smooth.lenis?.stop()
+      // Lenis may not exist yet (App starts it after this layout effect);
+      // create it now so the wheel can't scroll the page behind the curtain
+      startSmoothScroll().stop()
       document.documentElement.style.overflow = 'hidden'
       document.getElementById('boot')?.remove()
 
@@ -77,7 +79,7 @@ export default function Loader({ onReveal, onDone }) {
         if (nameEl) {
           const r = nameEl.getBoundingClientRect()
           const t = r.top - mh * 0.93 + r.height * 0.06
-          if (t > 70) top = t
+          if (t > 70 && t + mh < window.innerHeight) top = t
         }
         cat.style.top = `${top}px`
       }
